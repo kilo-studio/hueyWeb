@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>HUEY</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700" rel="stylesheet">
+    <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css'>
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+
+    <script type="text/javascript">
+        strLED1 = "";
+        strLED2 = "";
+        latitude = "";
+        longitude = "";
+        dayBrightness = "";
+        nightBrightness = "";
+        maxTemp = "";
+        minTemp = "";
+        maxCloudCover = "";
+        sunIntensity = "";
+        rainOverride = "";
+        rainIntensityOverride = "";
+
+        var LED2_state = 0;
+        function GetArduinoIO()
+        {
+            nocache = "&nocache=" + Math.random() * 1000000;
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = function()
+            {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        if (this.responseXML != null) {
+                            // XML file received - contains analog values, switch values and LED states
+                            var count;
+                            // LED 1
+                            if (this.responseXML.getElementsByTagName('LED')[0].childNodes[0].nodeValue === "checked") {
+                                document.LED_form.LED1.checked = true;
+                            }
+                            else {
+                                document.LED_form.LED1.checked = false;
+                            }
+                            // LED 2
+                            if (this.responseXML.getElementsByTagName('LED')[1].childNodes[0].nodeValue === "on") {
+                                document.getElementById("LED2").innerHTML = "LED 2 is ON (D7)";
+                                LED2_state = 1;
+                            }
+                            else {
+                                document.getElementById("LED2").innerHTML = "LED 2 is OFF (D7)";
+                                LED2_state = 0;
+                            }//latitude = "";
+                            // longitude = "";
+                            // dayBrightness = "";
+                            // nightBrightness = "";
+                            // maxTemp = "";
+                            // minTemp = "";
+                            // maxCloudCover = "";
+                            // sunIntensity = "";
+                            // rainOverride = "";
+                            // rainIntensityOverride = "";
+                        }
+                    }
+                }
+            }
+            // send HTTP GET request with LEDs to switch on/off if any
+            request.open("GET", "ajax_inputs" + strLED1 + strLED2 + latitude + longitude + dayBrightness + nightBrightness + maxTemp + minTemp + maxCloudCover + sunIntensity + rainOverride + rainIntensityOverride + nocache, true);
+            request.send(null);
+            setTimeout('GetArduinoIO()', 1000);
+            strLED1 = "";
+            strLED2 = "";
+            latitude = "";
+            longitude = "";
+            dayBrightness = "";
+            nightBrightness = "";
+            maxTemp = "";
+            minTemp = "";
+            maxCloudCover = "";
+            sunIntensity = "";
+            rainOverride = "";
+            rainIntensityOverride = "";
+        }
+        // service LEDs when checkbox checked/unchecked
+        function GetCheck()
+        {
+            if (document.getElementById('current-location').checked) {
+                strLED1 = "&LED1=1";
+                latitude = "&latitude=0";
+                longitude = "&longitude=0";
+            }
+            else {
+                strLED1 = "&LED1=0";
+            }
+        }
+        function GetButton1()
+        {
+            if (LED2_state === 1) {
+                LED2_state = 0;
+                strLED2 = "&LED2=0";
+            }
+            else {
+                LED2_state = 1;
+                strLED2 = "&LED2=1";
+            }
+        }
+    </script>
+
+    <style type="text/css">
+        
+        .grid {
+            display: grid;
+            grid-gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-auto-rows: 20px;
+        }
+
+
+        /* Non-grid specific CSS */
+
+        body {
+            margin: 10px;
+            color: rgb(20, 47, 61);
+            background-color: #000;
+            font-family: 'Open Sans Condensed', sans-serif;
+            font-size: 1.15em;
+            font-weight: 400;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        input {
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            padding-left: 0.25em;
+            box-sizing: border-box;
+        }
+
+        input:disabled {
+            background: #f2f2f2;
+        }
+
+        .range {
+            margin: inherit;
+            margin-top: 12px;
+        }
+
+        .rangeLabel {
+            flex: 1 0 200px !important;
+        }
+
+        label>span.checkLabel {
+            font-weight: normal;
+        }
+
+        .flex-outer li {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .flex-outer>li {
+            padding: 0px 0px 12px 0px;
+        }
+
+        .flex-outer>li:not(:last-child) {}
+
+        .flex-outer>li>label {
+            flex: 1 0 75px;
+            max-width: 200;
+            padding: 0px 10px 0px 0px;
+            font-weight: bold;
+        }
+
+        .flex-outer>li>label+* {
+            flex: 1 0 67%;
+        }
+
+        .item {
+            background-color: #f2f2f2;
+        }
+
+        .title {
+            padding: 20px;
+        }
+
+        .title h3 {
+            font-size: 1.2em;
+            color: #f2f2f2;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .title {
+            background-color: rgb(73, 83, 88);
+        }
+
+        .desc {
+            padding: 10px 10px 5px 10px;
+        }
+
+        .desc p {
+            margin-bottom: 10px;
+        }
+
+        #loading {
+            z-index: 10000
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(73, 83, 88, 1);
+            background-image: url("https://i.stack.imgur.com/MnyxU.gif");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 50px 50px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+    <div id="loading"></div>
+    <div class="grid">
+        <div class="item">
+            <div class="content">
+                <div class="title">
+                    <h3>Location</h3>
+                </div>
+                <div class="desc">
+                    <form>
+                        <ul class="flex-outer">
+                            <li>
+                                <label for="latitude">Latitude</label>
+                                <input type='text' id='latitude' value='37.5949'>
+                            </li>
+                            <li>
+                                <label for="longitude">Longitude</label>
+                                <input type='text' id='longitude' value='-77.5757'>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="current-location" onclick="GetCheck()">
+                                <label for="current-location"><span class="checkLabel">Use my current location.</span></label>
+                            </li>
+                        </ul>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <div class="content">
+                <div class="title">
+                    <h3>Brightness</h3>
+                </div>
+                <div class="desc">
+                    <form>
+                        <ul class='flex-outer'>
+                            <li>
+                                <label class='rangeLabel' for='dayBrightness' id='dayBrightnessLabel'>Daytime Brightness</label>
+                                <input class='range' type='range' id='dayBrightness' min='0' max='100' value='70' step='1'>
+                            </li>
+                            <li>
+                                <label class='rangeLabel' for='nightBrightness' id='nightBrightnessLabel'>After Sunset</label>
+                                <input class='range' type='range' id='nightBrightness' min='0' max='100' value='20' step='1'>
+                            </li>
+                        </ul>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <div class="content">
+                <div class="title">
+                    <h3>Temperature</h3>
+                </div>
+                <div class="desc">
+                    <form>
+                        <ul class='flex-outer'>
+                            <li>
+                                <label class='rangeLabel' for='maxTemp' id='maxTempLabel'>Maximum Temperature</label>
+                                <input class='range' type='range' id='maxTemp' min='60' max='110' value='100' step='1'>
+                            </li>
+                            <li>
+                                <label class='rangeLabel' for='minTemp' id='minTempLabel'>Minimum Temperature</label>
+                                <input class='range' type='range' id='minTemp' min='-10' max='50' value='10' step='1'>
+                            </li>
+                        </ul>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <div class="content">
+                <div class="title">
+                    <h3>Clouds</h3>
+                </div>
+                <div class="desc">
+                    <form>
+                        <ul class='flex-outer'>
+                            <li>
+                                <label class='rangeLabel' for='clouds' id="cloudsLabel">Cloud Strength</label>
+                                <input class='range' type="range" id="clouds" min='0' max="100" value='70' step='1'>
+                            </li>
+                            <li>
+                                <p>
+                                    The stronger the clouds, the dimmer the color when it's cloudy. If Cloud Strength is set to 100%, an hour of overcast will appear black.
+                                </p>
+                            </li>
+                        </ul>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <div class="content">
+                <div class="title">
+                    <h3>Sun</h3>
+                </div>
+                <div class="desc">
+                    <form>
+                        <ul class="flex-outer">
+                            <li>
+                                <label class="rangeLabel" for="sun" id="sunLabel">Sun Strength</label>
+                                <input class="range" type="range" id="sun" min="0" max="100" value='20' step="1">
+                            </li>
+                            <p>
+                                The daylight hours of the forecast appear brighter.
+                            </p>
+                        </ul>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <div class="content">
+                <div class="title">
+                    <h3>Rain</h3>
+                </div>
+                <div class="desc">
+                    <form>
+                        <ul class="flex-outer">
+                            <li>
+                                <label class='rangeLabel' for='rainIntensityOverride' id="rainIntensityLabel">Rain Intensity</label>
+                                <input class='range' type="range" id="rainIntensityOverride" min='0' max="100" value='50' step='10' disabled="true">
+                            </li>
+                            <li>
+                                <input type="checkbox" id="rainOverride">
+                                <label for="rainOverride"><span class="checkLabel">Make it rain.</span></label>
+                            </li>
+                        </ul>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.1/imagesloaded.pkgd.min.js'></script>
+</body>
+
+<script type="text/javascript">
+
+    function resizeGridItem(item) {
+        grid = document.getElementsByClassName("grid")[0];
+        rowHeight = parseInt(window.getComputedStyle(grid).getPropertyValue('grid-auto-rows'));
+        rowGap = parseInt(window.getComputedStyle(grid).getPropertyValue('grid-row-gap'));
+        rowSpan = Math.ceil((item.querySelector('.content').getBoundingClientRect().height + rowGap) / (rowHeight + rowGap));
+        item.style.gridRowEnd = "span " + rowSpan;
+    }
+
+    function resizeAllGridItems() {
+        allItems = document.getElementsByClassName("item");
+        for (x = 0; x < allItems.length; x++) {
+            resizeGridItem(allItems[x]);
+        }
+    }
+
+    function resizeInstance(instance) {
+        item = instance.elements[0];
+        resizeGridItem(item);
+    }
+
+
+    window.addEventListener("resize", resizeAllGridItems);
+
+    allItems = document.getElementsByClassName("item");
+    for (x = 0; x < allItems.length; x++) {
+        imagesLoaded(allItems[x], resizeInstance);
+    }
+
+    /* controls */
+
+    function showMaxVal() {
+        document.getElementById("maxTempLabel").innerHTML = 'Maximum Temperature: ' + document.getElementById('maxTemp').value;        
+    }
+
+    function setVal(id, val) {
+        document.getElementById(id).value = val;
+    }
+
+    function showMinVal() {
+        document.getElementById("minTempLabel").innerHTML = 'Minimum Temperature: ' + document.getElementById('minTemp').value;
+    }
+
+    function showDayBrightness() {
+        document.getElementById("dayBrightnessLabel").innerHTML = 'Daytime Brightness: ' + document.getElementById('dayBrightness').value + '%';
+    }
+
+    function showNightBrightness() {
+        document.getElementById("nightBrightnessLabel").innerHTML = 'After Sunset: ' + document.getElementById('nightBrightness').value + '%';
+    }
+
+    function showClouds() {
+        document.getElementById("cloudsLabel").innerHTML = 'Cloud Strength: ' + document.getElementById('clouds').value + '%';
+    }
+
+    function showSun() {
+        document.getElementById("sunLabel").innerHTML = 'Sun Intensity: ' + document.getElementById('sun').value + '%';
+    }
+
+    function showRainIntensity() {
+        document.getElementById("rainIntensityLabel").innerHTML = 'Rain Intensity: ' + document.getElementById('rainIntensityOverride').value + '%';
+    }
+
+    document.getElementById('maxTemp').oninput = function() {
+        showMaxVal();
+        maxTemp = "&maxTemp=" + document.getElementById('maxTemp').value;
+    }
+
+    document.getElementById('minTemp').oninput = function() {
+        showMinVal();
+        minTemp = "&minTemp=" + document.getElementById('minTemp').value;
+    }
+
+    document.getElementById('dayBrightness').oninput = function() {
+        showDayBrightness();
+        dayBrightness = "&dayBrightness=" + document.getElementById('dayBrightness').value;
+    }
+
+    document.getElementById('nightBrightness').oninput = function() {
+        showNightBrightness();
+        nightBrightness = "&nightBrightness=" + document.getElementById('nightBrightness').value;
+    }
+
+    document.getElementById('clouds').oninput = function() {
+        showClouds();
+        maxCloudCover = "&maxCloudCover=" + document.getElementById('clouds').value;
+    }
+
+    document.getElementById('sun').oninput = function() {
+        showSun();
+        sunIntensity = "&sunIntensity=" + document.getElementById('sun').value;
+    }    
+
+    document.getElementById('rainIntensityOverride').oninput = function() {
+        showRainIntensity();
+        rainIntensityOverride = "&rainIntensityOverride=" + document.getElementById('rainIntensityOverride').value;
+    }  
+
+    document.getElementById('current-location').onchange = function() {
+        document.getElementById('latitude').disabled = this.checked;
+        document.getElementById('longitude').disabled = this.checked;
+    }
+
+    document.getElementById('rainOverride').onchange = function() {
+        document.getElementById('rainIntensityOverride').disabled = !this.checked;
+        
+        if (document.getElementById('rainOverride').checked) {
+            rainOverride = "&rainOverride=1";
+        }
+        else {
+            rainOverride = "&rainOverride=0";
+        }  
+    }
+
+    function onReady(callback) {
+      var intervalId = window.setInterval(function() {
+        if (document.getElementsByTagName('body')[0] !== undefined) {
+          window.clearInterval(intervalId);
+          callback.call(this);
+        }
+      }, 1000);
+    }
+
+    function setVisible(selector, visible) {
+      document.querySelector(selector).style.display = visible ? 'block' : 'none';
+    }
+
+    onReady(function() {
+      // setVisible('.page', true);
+      setVisible('#loading', false);
+    });
+
+    window.onload = function() {
+        resizeAllGridItems();
+        showMaxVal();
+        showMinVal();
+        showDayBrightness();
+        showNightBrightness();
+        showClouds();
+        showSun();
+        showRainIntensity();
+        GetArduinoIO();
+    }        
+
+</script>
+
+</html>
